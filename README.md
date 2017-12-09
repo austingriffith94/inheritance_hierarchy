@@ -4,48 +4,39 @@ An old Bank of America coding test.
 ## Inheritance Hierarchy
 Multiple classes of functions that are called by a main class through virtual functions.
 
-        int main()
-    {
-        //------------part 1------------//
-        //intialize variables
-        string check;
-        double x;
-        double a1;
-        double a2;
+mfunc.h shows how to set up the virtual functions that can call on other class functions.
 
-        //determines whether to use test values or input values
-        //input either 'y' or 'n'
-        cout << "Do you want to input values? (y/n)" << endl;
-        cin >> check;
-        cout << endl;
+    // mfunc.h
+    class mfunc{
+    public:
+        mfunc();
+        virtual double value(double x);
+        virtual ~mfunc(){}
+    };
 
-        if(check == "y")
-        {
-            //input to command window
-            cout << "Input X value: " << endl;
-            cin >> x;
-            cout << "Input coefficient value: " << endl;
-            cin >> a1;
-            cout << "Input another coefficient value: " << endl;
-            cin >> a2;
-            cout << endl;
-        }
+linear.h shows how to set up a function that can interact with the mfunc.h setup.
 
-        else //if anything other than 'y' is input
-        {
-            //test run values
-            x = 2.0;
-            a1 = 3.5;
-            a2 = 2.5;
-        }
+    // linear.h
+    class linear : public mfunc{
+    protected:
+        double a;
+    public:
+        linear();
+        linear(double A_);
+        virtual double value(double x);
+        ~linear() {}
+    };
 
-        //initalizes function classes
+main.cpp code showing how the functional classes are used with one another in the inheritance hierarchy.
+
+        // main.cpp
+        // initalizes function classes
         linear lin1(a1);
         linear lin2(a2);
         quadratic quad1;
         quadratic2 quad2(a1,a2);
 
-        //outputs check of function classes
+        // outputs check of function classes
         cout << "X = " << x << endl << endl;
         cout << "Functions:" << endl;
         cout << a1 << "*X = " << lin1.value(x) << endl;
@@ -54,43 +45,38 @@ Multiple classes of functions that are called by a main class through virtual fu
         cout << a1 << "*X*X + " << a2*a2 << "*X + "
         << exp(a1/a2) << " = " << quad2.value(x) << endl << endl;
 
-
-        //------------part 2------------//
-        //initializes sumoffunction with other classes
-        sumoffunction sumfunc;
-        sumfunc.addfunc(new quadratic);
-        sumfunc.addfunc(new linear(a1));
-        sumfunc.addfunc(new linear(a2));
-        sumfunc.addfunc(new quadratic2(a1,a2));
-
-        //checks sumoffunctions class addition
-        cout << "Sum of the functions: " << sumfunc.value(x)
-        << endl << endl;
-
-
-        //------------part 3------------//
-        //sets pointer values for main function
-        //uses classes from part 1 and 2
-        mfunc* sumptr = &sumfunc;
-        mfunc* quadptr = &quad1;
-
-        //gets difference between class functions
-        double diff = difference(x, sumfunc, quad1);
-        double diff_ptr = difference(x, sumptr, quadptr);
-
-        cout << "Difference between sum of functions" << endl;
-        cout << "and square of X, w/ pointers: " << diff_ptr << endl;
-
-        cout << "Difference between sum of functions" << endl;
-        cout << "and square of X, w/out pointers: " << diff << endl;
-
-        return 0;
-    }
-
 ## Sums of Functions
 Holds a vector of pointers to objects from the
 classes set up in the inheritance hierarchy. The pointers stored in this class include pointers to all classes provided in the code. Created to allow easy addition of extra functions.
 
-## Difference Templates
-Two different templates. One simply takes the functions, and the other takes pointers to two functions.
+sumoffunction.h shows how to set up a class that can pull pointers to other classes.
 
+    // sumoffunction.h
+    class sumoffunction : public mfunc{
+    protected:
+        vector<mfunc*> values_vec;
+    public:
+        sumoffunction();
+        void addfunc(mfunc *newfunc);
+        virtual double value(double x);
+        ~sumoffunction() {}
+    };
+
+## Difference Templates
+Two difference calculating templates. One simply takes the functions, and the other takes pointers to two functions classes.
+
+    // pointers
+    template <typename T>
+    double difference(double X_, T* func1, T* func2)
+    {
+        double D = (func1 -> value(X_)) - (func2 -> value(X_));
+        return D;
+    }
+
+    // no pointers
+    template <typename T, typename S>
+    double difference(double X_, T func1, S func2)
+    {
+        double D = func1.value(X_) - func2.value(X_);
+        return D;
+    }
